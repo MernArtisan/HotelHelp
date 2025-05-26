@@ -1,0 +1,12 @@
+[19-Feb-2025 15:37:09 UTC] PHP Fatal error:  Uncaught Error: Call to undefined function env() in /home/appniacs/demo.hotelhelp.appniacs.com/config/cache.php:18
+Stack trace:
+#0 {main}
+  thrown in /home/appniacs/demo.hotelhelp.appniacs.com/config/cache.php on line 18
+[06-May-2025 11:00:57 UTC] PHP Fatal error:  Uncaught Error: Call to undefined function env() in /home/appwebdemo/hotelhelp.appwebdemo.pro/config/app.php:18
+Stack trace:
+#0 {main}
+  thrown in /home/appwebdemo/hotelhelp.appwebdemo.pro/config/app.php on line 18
+[13-May-2025 01:28:43 UTC] PHP Fatal error:  Uncaught Error: Call to undefined function env() in /home/appwebdemo/hotelhelp.appwebdemo.pro/config/app.php:18
+Stack trace:
+#0 {main}
+  thrown in /home/appwebdemo/hotelhelp.appwebdemo.pro/config/app.php on line 18
