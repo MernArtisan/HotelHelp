@@ -1,0 +1,38 @@
+name: 🚀 Auto Deploy to FTP (spravato)
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  ftp-deploy:
+    name: Upload via FTP
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v3
+
+      - name: 📤 FTP Deploy
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.4
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          protocol: ftp
+          port: 21
+          server-dir: /hotelhelp.appwebdemo.pro/
+          local-dir: ./
+          passive: false
+          retry: true
+          exclude: |
+            .git/
+            .git/**
+            .github/
+            .github/**
+            **/.git*
+            **/.github*
+            **/.vscode*
+            **/node_modules/**
+       

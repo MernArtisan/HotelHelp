@@ -98,7 +98,7 @@
 
     <div class="login-container">
         <img src="{{ asset('logo.png') }}" alt="Logo">
-        <h2>Login to Your Account</h2>
+        <h2>Login to Your dada Account</h2>
 
 
         <form action="{{ route('admin.authenticate') }}" method="POST">
