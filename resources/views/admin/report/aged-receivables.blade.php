@@ -98,7 +98,7 @@
                                    @php
                                         $today = \Carbon\Carbon::now();
 
-                                        // Split the range and take end date
+                                        // Split the range sand take end date
                                         $dueRangeParts = explode(' to ', $env->due_date);
                                         $dueEndDate = end($dueRangeParts); // gives 2025-06-30
 
