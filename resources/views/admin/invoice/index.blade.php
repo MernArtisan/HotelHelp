@@ -26,19 +26,21 @@
 
                     <div class="col-lg-12">
                         <div class="card shadow-sm border-0">
+                            <br>
                             <form method="GET" action="{{ route('admin.invoicesList') }}" class="mb-3" id="filterForm">
                                 <div class="row">
-                                    <div class="col-md-5 offset-3"> 
-                                        <br>
+                                   <div class="col-md-5 offset-3">
                                         <input type="text" name="date_range" id="date_range" class="form-control"
-                                            value="{{ request('date_range') }}" placeholder="Select date range"
-                                            autocomplete="off">
+                                            value="{{ request('date_range') }}" placeholder="Select date range" autocomplete="off">
                                     </div>
                                     <div class="col-md-4 d-flex align-items-end">
                                         <a href="{{ route('admin.invoicesList') }}" class="btn btn-dark ms-2">Reset</a>
                                     </div>
                                 </div>
                             </form>
+
+            
+
 
                             <div class="card-body">
                                 <div style="overflow-x: auto; width: 100%;">
@@ -90,8 +92,11 @@
                                                     <td>{{ $Invoice->invoice_date ?? '' }}</td>
                                                     <td>${{ $Invoice->total_amount ?? '' }}</td>
                                                     <td>{{ $Invoice->due_date ?? '' }}</td>
-                                                    <td>
-                                                        @php $dueDate = \Carbon\Carbon::parse($Invoice->due_date); @endphp
+                                                   <td>
+                                                        @php 
+                                                            $dueDates = explode(' to ', $Invoice->due_date);
+                                                            $dueDate = \Carbon\Carbon::parse($dueDates[1] ?? $dueDates[0]);
+                                                        @endphp
                                                         @if ($Invoice->status == 'unpaid' && $dueDate->isPast())
                                                             <button class="btn btn-danger btn-sm">Unpaid - Overdue</button>
                                                         @elseif ($Invoice->status == 'unpaid')
@@ -102,6 +107,7 @@
                                                             <button class="btn btn-secondary btn-sm">N/A</button>
                                                         @endif
                                                     </td>
+
                                                     <td class="text-center">
                                                         <a href="{{ route('admin.invoices.download', $Invoice->id) }}"
                                                             class="btn btn-dark btn-sm">

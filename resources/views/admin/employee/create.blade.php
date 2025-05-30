@@ -107,8 +107,8 @@
                                                 @enderror
                                             </div>
                                         </div>
-                                        @if (isset($employee))
-                                        @else
+                                        {{-- @if (isset($employee))
+                                        @else --}}
                                             <div class="col-lg-4 col-md-6">
                                                 <div class="form-group">
                                                     <label for="password">Password <span class="required">*</span></label>
@@ -120,7 +120,7 @@
                                                     @enderror
                                                 </div>
                                             </div>
-                                        @endif
+                                        {{-- @endif --}}
                                     </div>
                                     <div class="row">
                                         <div class="col-lg-4 col-md-6">

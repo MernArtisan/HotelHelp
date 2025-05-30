@@ -128,7 +128,7 @@
 
         <!-- Content Section -->
         <div class="content">
-            <p>Dear {{ $user->name }},</p>
+            <p>Dear {{ $user->first_name }} {{ $user->middle_name }} {{ $user->last_name }},</p>
             <p>Congratulations! You have been successfully hired as a new member of our team. Below are your account
                 details:</p>
 
@@ -142,7 +142,7 @@
 
             <!-- Button Section -->
             <div class="button-container">
-                <a href="" class="button">Login to Your Account</a>
+                {{-- <a href="" class="button">Login to Your Account</a> --}}
             </div>
 
             <p>We are thrilled to have you with us and look forward to working together!</p>

@@ -165,16 +165,18 @@ class InvoiceController extends Controller
         if ($request->filled('date_range')) {
             [$startDate, $endDate] = explode(' to ', $request->date_range);
 
-            $Invoices = $Invoices->whereHas('items', function ($query) use ($startDate, $endDate) {
-                $query->whereDate('start_date', '>=', $startDate)
-                    ->whereDate('end_date', '<=', $endDate);
-            });
+            // Filter based on range inside stored due_date string
+            $Invoices = $Invoices->whereRaw("
+            STR_TO_DATE(SUBSTRING_INDEX(due_date, ' to ', 1), '%Y-%m-%d') <= ?
+            AND STR_TO_DATE(SUBSTRING_INDEX(due_date, ' to ', -1), '%Y-%m-%d') >= ?
+        ", [$endDate, $startDate]);
         }
 
         $Invoices = $Invoices->orderBy('id', 'desc')->paginate(10);
 
         return view('admin.invoice.index', compact('Invoices'));
     }
+
 
 
     public function invoicesAdd()
@@ -236,9 +238,10 @@ class InvoiceController extends Controller
 
     public function singleInvoiceStore(Request $request)
     {
+        // dd($request->all());
         $request->validate([
             'hotel_id' => 'required|exists:hotels,id',
-            'due_date' => 'required|date',
+            'due_date' => 'required',
             'item.employee_id' => 'required|exists:employees,id',
             'item.service' => 'required|string|max:255',
             'item.time' => 'required|numeric|min:0',
@@ -317,9 +320,10 @@ class InvoiceController extends Controller
 
     public function InvoiceStore(Request $request)
     {
+        // dd($request->all());
         $request->validate([
             'hotel_id' => 'required|exists:hotels,id',
-            'due_date' => 'required|date',
+            'due_date' => 'required',
             'items' => 'required|json',
         ]);
 

@@ -67,8 +67,7 @@
                                 <div class="all-label">
                                     <label for="dateFilter">Date:</label>
                                 </div>
-                                <input type="date" id="dateFilter" class="" name="invoice_date"
-                                    onchange="filterTable()">
+                                <input type="date" id="dateFilter" class="" name="invoice_date" onchange="filterTable()">
                                 <div class="all-label">
                                     <label for="hotelFilter">Hotel:</label>
                                 </div>
@@ -96,27 +95,37 @@
                             </thead>
                             <tbody>
                                 @foreach ($envoice as $env)
-                                    @php
+                                   @php
                                         $today = \Carbon\Carbon::now();
-                                        $dueDate = \Carbon\Carbon::parse($env->due_date);
-                                        $daysDifference = $today->diffInDays($dueDate, false); // negative if overdue
-                                        $status = $env->status; // status should be 'paid' or 'unpaid'
+
+                                        // Split the range and take end date
+                                        $dueRangeParts = explode(' to ', $env->due_date);
+                                        $dueEndDate = end($dueRangeParts); // gives 2025-06-30
+
+                                        // Parse only the end date
+                                        $dueDate = \Carbon\Carbon::parse($dueEndDate);
+
+                                        // Get difference in days (negative if overdue)
+                                        $daysDifference = $today->diffInDays($dueDate, false); 
+
+                                        $status = $env->status;
                                     @endphp
+
                                     <tr>
                                         <td>{{ $env->invoice_date }}</td>
                                         <td>{{ $env->hotel->name }}</td>
                                         <td>{{ $env->invoice_number }}</td>
                                         <td>{{ $env->due_date }}</td>
+
                                         <td>${{ $env->total_amount }}</td>
-                                        <td
-                                            style="background-color: 
-                                    @if ($status == 'unpaid') @if ($daysDifference < 0)
-                                            red
-                                        @else
-                                            blue @endif
-@else
-green
-                                    @endif; color: white;">
+                                        <td style="background-color: 
+                                                    @if ($status == 'unpaid') @if ($daysDifference < 0)
+                                                            red
+                                                        @else
+                                                            blue @endif
+                                                    @else
+                                                            green
+                                                        @endif; color: white;">
                                             @if ($status == 'unpaid')
                                                 @if ($daysDifference < 0)
                                                     {{ abs($daysDifference) }} days overdue
@@ -136,8 +145,7 @@ green
                                         </td>
                                         <td>
                                             @if ($status == 'unpaid')
-                                                <form action="{{ route('admin.PaidAgedReceivables', $env->id) }}"
-                                                    method="POST">
+                                                <form action="{{ route('admin.PaidAgedReceivables', $env->id) }}" method="POST">
                                                     @csrf
                                                     <button class="btn btn-dark btn-sm">Mark as Paid</button>
                                                 </form>

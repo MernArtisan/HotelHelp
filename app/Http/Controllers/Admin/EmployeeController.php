@@ -161,7 +161,7 @@ class EmployeeController extends Controller
             }
 
             $employee->save();
-            // Mail::to($user->email)->send(new EmployeeHiredNotification($user, $validatedData['password']));
+            Mail::to($user->email)->send(new EmployeeHiredNotification($user, $validatedData['password']));
             DB::commit();
             return redirect()->route('admin.employees.index')->with('success', 'Employee created successfully!');
         } catch (ValidationException $e) {
@@ -247,7 +247,7 @@ class EmployeeController extends Controller
 
             $employee->save();
 
-            // Mail::to($user->email)->send(new EmployeeHiredNotification($user, $validatedData['password']));
+            Mail::to($user->email)->send(new EmployeeHiredNotification($user, $validatedData['password']));
 
             DB::commit();
 

@@ -23,7 +23,8 @@
                 @endphp
                 <tr>
                     <td>{{ optional($card->employee?->user)->first_name }}
-                        {{ optional($card->employee?->user)->last_name }}</td>
+                        {{ optional($card->employee?->user)->last_name }}
+                    </td>
                     <td>{{ optional($card->employee?->job)->name ?? '-' }}</td>
                     <td>{{ number_format($card->total_hours, 2) }}</td>
                     <td>${{ number_format($card->total_amount, 2) }}</td>
@@ -33,10 +34,9 @@
                         <form method="POST" action="{{ route('admin.singleInvoiceStore') }}">
                             @csrf
                             <input type="hidden" name="hotel_id" value="{{ $card->employee->hotel_id }}">
-                            <input type="hidden" name="due_date" value="{{ now()->addDays(7)->toDateString() }}">
+                            <input type="hidden" name="due_date" value="{{ request('due_date') }}">
                             <input type="hidden" name="item[employee_id]" value="{{ $card->employee->id }}">
-                            <input type="hidden" name="item[service]"
-                                value="{{ optional($card->employee?->job)->name }}">
+                            <input type="hidden" name="item[service]" value="{{ optional($card->employee?->job)->name }}">
                             <input type="hidden" name="item[time]" value="{{ $card->total_hours }}">
                             <input type="hidden" name="item[price_per_unit]" value="{{ $card->employee->pay_rate }}">
                             <input type="hidden" name="item[platform_fee]" value="{{ $card->platform_fee }}">
@@ -48,11 +48,10 @@
                         </form>
 
                         <div class="item-data d-none" data-employee-id="{{ $card->employee->id }}"
-                            data-service="{{ optional($card->employee?->job)->name }}"
-                            data-time="{{ $card->total_hours }}" data-price="{{ $card->employee->pay_rate }}"
-                            data-platform-fee="{{ $card->platform_fee }}" data-total="{{ $card->total_amount }}"
-                            data-start="{{ $card->start_date }}" data-end="{{ $card->end_date }}"
-                            data-task-item-id="{{ $card->task_item_id }}">
+                            data-service="{{ optional($card->employee?->job)->name }}" data-time="{{ $card->total_hours }}"
+                            data-price="{{ $card->employee->pay_rate }}" data-platform-fee="{{ $card->platform_fee }}"
+                            data-total="{{ $card->total_amount }}" data-start="{{ $card->start_date }}"
+                            data-end="{{ $card->end_date }}" data-task-item-id="{{ $card->task_item_id }}">
                         </div>
                     </td>
                 </tr>
@@ -64,12 +63,10 @@
                 <td colspan="3" class="text-right">Total</td>
                 <td>${{ number_format($grandAmount, 2) }}</td>
                 <td>
-                    <form method="POST" action="{{ route('admin.InvoiceStore') }}"
-                        onsubmit="return populateTaskItems()">
+                    <form method="POST" action="{{ route('admin.InvoiceStore') }}" onsubmit="return populateTaskItems()">
                         @csrf
-                        <input type="hidden" name="hotel_id"
-                            value="{{ optional($taskData->first()->employee)->hotel_id }}">
-                        <input type="hidden" name="due_date" value="{{ now()->addDays(7)->toDateString() }}">
+                        <input type="hidden" name="hotel_id" value="{{ optional($taskData->first()->employee)->hotel_id }}">
+                        <input type="hidden" name="due_date" id="bulk_due_date">
                         <input type="hidden" name="items" id="items-json" value="">
                         <button type="submit" class="btn btn-success btn-sm">Bulk Send Invoice</button>
                     </form>
@@ -85,7 +82,7 @@
     function populateTaskItems() {
         let items = [];
 
-        document.querySelectorAll('.item-data').forEach(function(div) {
+        document.querySelectorAll('.item-data').forEach(function (div) {
             items.push({
                 employee_id: div.dataset.employeeId,
                 service: div.dataset.service,
@@ -100,7 +97,10 @@
             });
         });
 
+
         document.getElementById('items-json').value = JSON.stringify(items);
+        document.getElementById('bulk_due_date').value = document.getElementById('due_date').value;
+
         return true;
     }
 </script>
