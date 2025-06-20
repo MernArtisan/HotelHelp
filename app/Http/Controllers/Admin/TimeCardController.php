@@ -38,7 +38,7 @@ class TimeCardController extends Controller
 
         $hotels = Hotel::all();
 
-        $payGroups = PayGroup::all();
+        $payGroups = PayGroup::all();  
 
         return view('admin.timecard.index', compact('employees', 'timeCard', 'hotels', 'payGroups'));
     }
@@ -47,7 +47,6 @@ class TimeCardController extends Controller
     public function timecardPost(Request $request)
     {
         try {
-            // Validation
             $request->validate([
                 'employee_id' => 'required',
                 'start_time' => 'required',
@@ -57,18 +56,14 @@ class TimeCardController extends Controller
                 'date' => 'required|date',
             ]);
 
-            // Get Employee
             $employee = Employee::findOrFail($request->employee_id);
             $pay_rate = $employee->pay_rate;
 
-            // Parse Start and End time
             $start_time = Carbon::parse($request->start_time);
             $end_time = Carbon::parse($request->end_time);
 
-            // Calculate Worked Hours
             $worked_hours = $end_time->diffInMinutes($start_time) / 60;
 
-            // Calculate Break Time if applicable
             if ($request->break_start && $request->break_end) {
                 $break_start = Carbon::parse($request->break_start);
                 $break_end = Carbon::parse($request->break_end);
@@ -76,15 +71,7 @@ class TimeCardController extends Controller
                 $worked_hours -= $break_duration;
             }
 
-            // Total Amount Calculation
             $total_amount = $worked_hours * $pay_rate;
-
-            // Prevent Timecard Entry for Future Dates
-            if (Carbon::parse($request->date)->isFuture()) {
-                return redirect()->back()->with('error', 'You cannot mark time for a future date');
-            }
-
-            // Check if Timecard Already Exists for this Date
             $alreadyIn = Timecard::where('date', $request->date)
                 ->where('employee_id', $request->employee_id)
                 ->first();
@@ -93,7 +80,7 @@ class TimeCardController extends Controller
                 return redirect()->back()->with('error', 'You have already marked timecard for this date');
             }
 
-            // Create New Timecard
+
             TimeCard::create([
                 'employee_id' => $request->employee_id,
                 'start_time' => $request->start_time,
@@ -104,7 +91,6 @@ class TimeCardController extends Controller
                 'total_amount' => $total_amount,
                 'date' => $request->date,
             ]);
-
             return redirect()->back()->with('success', 'TimeCard marked successfully!');
         } catch (Exception $e) {
             return redirect()->back()->with('error', 'Something went wrong while saving your timecard.');
