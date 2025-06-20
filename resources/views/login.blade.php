@@ -134,15 +134,6 @@
 
 
 
-    <script>
-        toastr.options = {
-            "closeButton": true, // Show close button
-            "progressBar": true, // Show progress bar
-            "positionClass": "toast-top-right", // Position the toast in the top right
-            "timeOut": "5000", // Toast will disappear after 5 seconds
-            "extendedTimeOut": "1000" // Extended time for closing the toast after hover
-        };
-    </script>
 
 </body>
 

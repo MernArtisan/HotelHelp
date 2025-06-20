@@ -24,7 +24,7 @@ class LoginController extends Controller
 
             if (Auth::attempt(['email' => $request->email, 'password' => $request->password])) {
                 return redirect()->route('admin.dashboard')
-                    ->with('success', 'Login Successful, ' . Auth::user()->name);
+                    ->with('success', 'Login Successfully, ' . Auth::user()->name);
             }
 
 

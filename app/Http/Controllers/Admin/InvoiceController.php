@@ -287,7 +287,7 @@ class InvoiceController extends Controller
             ]);
 
             // ✅ Send email to hotel (with full invoice)
-            Mail::to($hotelEmail)->send(new \App\Mail\HotelInvoiceMail($invoice, $hotel));
+            // Mail::to($hotelEmail)->send(new \App\Mail\HotelInvoiceMail($invoice, $hotel));
 
             // ✅ Send email to employee
             $employee = \App\Models\Employee::with('user')->find($request->item['employee_id']);
@@ -391,7 +391,7 @@ class InvoiceController extends Controller
             DB::commit();
 
             // 1. Send email to hotel (with full invoice)
-            Mail::to($hotelEmail)->send(new \App\Mail\HotelInvoiceMail($invoice, $hotel));
+            // Mail::to($hotelEmail)->send(new \App\Mail\HotelInvoiceMail($invoice, $hotel));
 
             // 2. Send email to each employee with their own info
             foreach ($items as $item) {
