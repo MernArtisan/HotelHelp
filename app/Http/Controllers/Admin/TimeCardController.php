@@ -17,7 +17,7 @@ class TimeCardController extends Controller
     {
         // Fetch timecards with associated employee data, ordered by the most recent 'created_at' first
         $timeCard = Timecard::with('employee.user', 'employee.hotel', 'employee.payGroup')
-            ->orderBy('created_at', 'desc')
+            ->orderBy('created_at', 'asc')
             ->get();
 
         // Loop through each timecard to calculate break and work durations
