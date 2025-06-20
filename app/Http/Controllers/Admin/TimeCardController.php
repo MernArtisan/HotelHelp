@@ -15,14 +15,20 @@ class TimeCardController extends Controller
 {
     public function timecardCreate()
     {
-        $timeCard = Timecard::with('employee.user', 'employee.hotel', 'employee.payGroup')->orderBy('created_at', 'desc')->get();
+        // Fetch timecards with associated employee data, ordered by the most recent 'created_at' first
+        $timeCard = Timecard::with('employee.user', 'employee.hotel', 'employee.payGroup')
+            ->orderBy('created_at', 'desc')
+            ->get();
 
+        // Loop through each timecard to calculate break and work durations
         $timeCard->each(function ($card) {
+            // Break duration in minutes
             $breakStart = Carbon::parse($card->break_start);
             $breakEnd = Carbon::parse($card->break_end);
             $breakDurationInMinutes = $breakStart->diffInMinutes($breakEnd);
             $card->break_duration_in_minutes = $breakDurationInMinutes;
 
+            // Work duration calculation (start_time to end_time minus break duration)
             $startTime = Carbon::parse($card->start_time);
             $endTime = Carbon::parse($card->end_time);
             $workDurationInMinutes = $startTime->diffInMinutes($endTime);
@@ -30,18 +36,24 @@ class TimeCardController extends Controller
             $workDurationInHours = floor($actualWorkDurationInMinutes / 60);
             $workDurationRemainingMinutes = $actualWorkDurationInMinutes % 60;
 
+            // Adding calculated working hours and remaining minutes
             $card->working_hours = $workDurationInHours;
             $card->remaining_minutes = $workDurationRemainingMinutes;
         });
 
-        $employees = Employee::where('status', 'active')->orderBy('id', 'desc')->get();
+        // Fetch active employees, ordered by ID in descending order
+        $employees = Employee::where('status', 'active')
+            ->orderBy('id', 'desc')
+            ->get();
 
+        // Fetch all hotels and payGroups
         $hotels = Hotel::all();
+        $payGroups = PayGroup::all();
 
-        $payGroups = PayGroup::all();  
-
+        // Return the view with the necessary data
         return view('admin.timecard.index', compact('employees', 'timeCard', 'hotels', 'payGroups'));
     }
+
 
 
     public function timecardPost(Request $request)
