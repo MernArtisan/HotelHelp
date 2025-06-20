@@ -15,7 +15,7 @@ class TimeCardController extends Controller
 {
     public function timecardCreate()
     {
-        $timeCard = Timecard::with('employee.user', 'employee.hotel', 'employee.payGroup')->orderBy('id', 'desc')->get();
+        $timeCard = Timecard::with('employee.user', 'employee.hotel', 'employee.payGroup')->orderBy('created_at', 'desc')->get();
 
         $timeCard->each(function ($card) {
             $breakStart = Carbon::parse($card->break_start);
