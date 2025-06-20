@@ -15,10 +15,8 @@ class TimeCardController extends Controller
 {
     public function timecardCreate()
     {
-        // Fetch the timecards with relationships
         $timeCard = Timecard::with('employee.user', 'employee.hotel', 'employee.payGroup')->orderBy('id', 'desc')->get();
 
-        // Calculate work hours and break durations for each timecard
         $timeCard->each(function ($card) {
             $breakStart = Carbon::parse($card->break_start);
             $breakEnd = Carbon::parse($card->break_end);
@@ -36,16 +34,12 @@ class TimeCardController extends Controller
             $card->remaining_minutes = $workDurationRemainingMinutes;
         });
 
-        // Fetch active employees
         $employees = Employee::where('status', 'active')->orderBy('id', 'desc')->get();
 
-        // Fetch hotels (assuming you have a Hotel model)
         $hotels = Hotel::all();
 
-        // Fetch pay groups (assuming you have a PayGroup model)
-        $payGroups = PayGroup::all();  // Fetch all pay groups
+        $payGroups = PayGroup::all();  
 
-        // Pass employees, timecards, hotels, and pay groups to the view
         return view('admin.timecard.index', compact('employees', 'timeCard', 'hotels', 'payGroups'));
     }
 
