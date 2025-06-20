@@ -103,7 +103,8 @@
                 @foreach ($invoice->items as $item)
                     <tr>
                         <td>{{ $item->service }}</td>
-                        <td>{{ $item->quantity }}</td>
+                        <td>{{ $item->employee->user->first_name }} {{ $item->employee->user->middle_name }}
+                            {{ $item->employee->user->last_name }}</td>
                         <td>{{ $item->time }}</td>
                         <td>{{ number_format($item->price_per_unit, 2) }}</td>
                         <td>{{ $item->start_date }}</td>
