@@ -61,19 +61,28 @@ class TimeCardController extends Controller
             ->orderBy('created_at', 'asc')
             ->get();
 
-        // Process each timecard
-        $timeCard->each(function ($card) {
-            // Parse all times as UTC
-            $start = Carbon::parse($card->start_time)->setTimezone('UTC');
-            $end = Carbon::parse($card->end_time)->setTimezone('UTC');
-            $breakStart = Carbon::parse($card->break_start)->setTimezone('UTC');
-            $breakEnd = Carbon::parse($card->break_end)->setTimezone('UTC');
+        // Get application timezone from config
+        $timezone = config('app.timezone');
 
-            // Store formatted UTC times
-            $card->utc_start_time = $start->format('Y-m-d H:i:s');
-            $card->utc_break_start = $breakStart->format('Y-m-d H:i:s');
-            $card->utc_break_end = $breakEnd->format('Y-m-d H:i:s');
-            $card->utc_end_time = $end->format('Y-m-d H:i:s');
+        // Process each timecard
+        $timeCard->each(function ($card) use ($timezone) {
+            // Parse all times as UTC and convert to local timezone
+            $start = Carbon::parse($card->start_time)->setTimezone('UTC')->setTimezone($timezone);
+            $end = Carbon::parse($card->end_time)->setTimezone('UTC')->setTimezone($timezone);
+            $breakStart = Carbon::parse($card->break_start)->setTimezone('UTC')->setTimezone($timezone);
+            $breakEnd = Carbon::parse($card->break_end)->setTimezone('UTC')->setTimezone($timezone);
+
+            // Store formatted local times
+            $card->local_start_time = $start->format('Y-m-d H:i:s');
+            $card->local_break_start = $breakStart->format('Y-m-d H:i:s');
+            $card->local_break_end = $breakEnd->format('Y-m-d H:i:s');
+            $card->local_end_time = $end->format('Y-m-d H:i:s');
+
+            // Also store formatted times in 12-hour format with AM/PM
+            $card->formatted_start_time = $start->format('h:i A');
+            $card->formatted_break_start = $breakStart->format('h:i A');
+            $card->formatted_break_end = $breakEnd->format('h:i A');
+            $card->formatted_end_time = $end->format('h:i A');
 
             // Validate time sequence
             if ($end->lte($start)) {

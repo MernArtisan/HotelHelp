@@ -240,10 +240,10 @@
             <th>Date</th>
             <th>Hotel</th>
             <th>Pay Group</th>
-            <th>Start Time (UTC)</th>
-            <th>Break Start (UTC)</th>
-            <th>Break End (UTC)</th>
-            <th>End Time (UTC)</th>
+            <th>Start Time (Local)</th>
+            <th>Break Start (Local)</th>
+            <th>Break End (Local)</th>
+            <th>End Time (Local)</th>
             <th>Total Work Hours</th>
             <th>Break Duration</th>
             <th>Wages</th>
@@ -260,10 +260,22 @@
                 <td>{{ $item->date }}</td>
                 <td>{{ $item->employee->hotel->name ?? 'N/A' }}</td>
                 <td>{{ $item->employee->payGroup->name ?? 'N/A' }}</td>
-                <td>{{ $item->utc_start_time ?? 'N/A' }}</td>
-                <td>{{ $item->utc_break_start ?? 'N/A' }}</td>
-                <td>{{ $item->utc_break_end ?? 'N/A' }}</td>
-                <td>{{ $item->utc_end_time ?? 'N/A' }}</td>
+                <td>
+                    {{ $item->local_start_time }}<br>
+                    <small>({{ $item->formatted_start_time }})</small>
+                </td>
+                <td>
+                    {{ $item->local_break_start }}<br>
+                    <small>({{ $item->formatted_break_start }})</small>
+                </td>
+                <td>
+                    {{ $item->local_break_end }}<br>
+                    <small>({{ $item->formatted_break_end }})</small>
+                </td>
+                <td>
+                    {{ $item->local_end_time }}<br>
+                    <small>({{ $item->formatted_end_time }})</small>
+                </td>
                 <td>
                     @if(isset($item->timecard_error))
                         <span class="text-danger" title="{{ $item->timecard_error }}">
