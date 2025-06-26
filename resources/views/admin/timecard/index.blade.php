@@ -153,7 +153,8 @@
                                     <option value="">Select Employee</option>
                                     @foreach ($employees as $employee)
                                         <option value="{{ $employee->employee_id }}">
-                                            {{ $employee->employee_id }} - {{ $employee->user->first_name }} {{ $employee->user->middle_name }} {{ $employee->user->last_name }}
+                                            {{ $employee->employee_id }} - {{ $employee->user->first_name }}
+                                            {{ $employee->user->middle_name }} {{ $employee->user->last_name }}
                                         </option>
                                     @endforeach
                                 </select>
@@ -185,7 +186,7 @@
 
                     <div class="table-container">
                         <div class="table-responsive">
-                            <table class="table table-bordered" id="example" style="width:100%; white-space: nowrap;">
+                            {{-- <table class="table table-bordered" id="example" style="width:100%; white-space: nowrap;">
                                 <thead>
                                     <tr>
                                         <th>ID</th>
@@ -206,18 +207,62 @@
                                 </thead>
                                 <tbody id="timecard-table-body">
                                     @forelse ($timeCard as $item)
+                                    <tr>
+                                        <td>{{ $item->employee->employee_id }}</td>
+                                        <td>{{ $item->employee->user->first_name }} </td>
+                                        <td>{{ $item->employee->user->middle_name }} </td>
+                                        <td>{{ $item->employee->user->last_name }} </td>
+                                        <td>{{ $item->date }}</td>
+                                        <td>{{ $item->employee->hotel->name ?? 'N/A' }}</td>
+                                        <td>{{ $item->employee->payGroup->name ?? 'N/A' }}</td>
+                                        <td>{{ \Carbon\Carbon::parse($item->start_time)->format('h:i A') ?? 'N/A' }}</td>
+                                        <td>{{ \Carbon\Carbon::parse($item->break_start)->format('h:i A') ?? 'N/A' }}</td>
+                                        <td>{{ \Carbon\Carbon::parse($item->break_end)->format('h:i A') ?? 'N/A' }}</td>
+                                        <td>{{ \Carbon\Carbon::parse($item->end_time)->format('h:i A') ?? 'N/A' }}</td>
+                                        <td>{{ $item->working_hours ?? 0 }} HR {{ $item->remaining_minutes ?? 0 }} MIN</td>
+                                        <td>{{ $item->break_duration_in_minutes ?? 0 }} MIN</td>
+                                        <td>${{ $item->total_amount ?? 'N/A' }}</td>
+                                    </tr>
+                                    @empty
+                                    <tr>
+                                        <td colspan="14" class="text-center">No timecards found.</td>
+                                    </tr>
+                                    @endforelse
+                                </tbody>
+                            </table> --}}
+                            <table class="table table-bordered" id="example" style="width:100%; white-space: nowrap;">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>First Name</th>
+                                        <th>Middle Name</th>
+                                        <th>Last Name</th>
+                                        <th>Date</th>
+                                        <th>Hotel</th>
+                                        <th>Pay Group</th>
+                                        <th>Start Time (UTC)</th>
+                                        <th>Break Start (UTC)</th>
+                                        <th>Break End (UTC)</th>
+                                        <th>End Time (UTC)</th>
+                                        <th>Total Work Hours</th>
+                                        <th>Break Duration</th>
+                                        <th>Wages</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="timecard-table-body">
+                                    @forelse ($timeCard as $item)
                                         <tr>
                                             <td>{{ $item->employee->employee_id }}</td>
-                                            <td>{{ $item->employee->user->first_name }} </td>
-                                            <td>{{ $item->employee->user->middle_name }} </td>
-                                            <td>{{ $item->employee->user->last_name }} </td>
+                                            <td>{{ $item->employee->user->first_name }}</td>
+                                            <td>{{ $item->employee->user->middle_name }}</td>
+                                            <td>{{ $item->employee->user->last_name }}</td>
                                             <td>{{ $item->date }}</td>
                                             <td>{{ $item->employee->hotel->name ?? 'N/A' }}</td>
                                             <td>{{ $item->employee->payGroup->name ?? 'N/A' }}</td>
-                                            <td>{{ \Carbon\Carbon::parse($item->start_time)->format('h:i A') ?? 'N/A' }}</td>
-                                            <td>{{ \Carbon\Carbon::parse($item->break_start)->format('h:i A') ?? 'N/A' }}</td>
-                                            <td>{{ \Carbon\Carbon::parse($item->break_end)->format('h:i A') ?? 'N/A' }}</td>
-                                            <td>{{ \Carbon\Carbon::parse($item->end_time)->format('h:i A') ?? 'N/A' }}</td>
+                                            <td>{{ $item->utc_start_time ?? 'N/A' }}</td>
+                                            <td>{{ $item->utc_break_start ?? 'N/A' }}</td>
+                                            <td>{{ $item->utc_break_end ?? 'N/A' }}</td>
+                                            <td>{{ $item->utc_end_time ?? 'N/A' }}</td>
                                             <td>{{ $item->working_hours ?? 0 }} HR {{ $item->remaining_minutes ?? 0 }} MIN</td>
                                             <td>{{ $item->break_duration_in_minutes ?? 0 }} MIN</td>
                                             <td>${{ $item->total_amount ?? 'N/A' }}</td>
@@ -230,7 +275,6 @@
                                 </tbody>
                             </table>
                         </div>
-                        
                     </div>
 
                 </div>
@@ -262,7 +306,8 @@
                                             <option value="">Select Employee</option>
                                             @foreach ($employees as $employee)
                                                 <option value="{{ $employee->id }}">
-                                                    {{ $employee->employee_id }} - {{ $employee->user->first_name }} {{ $employee->user->middle_name }} {{ $employee->user->last_name }}
+                                                    {{ $employee->employee_id }} - {{ $employee->user->first_name }}
+                                                    {{ $employee->user->middle_name }} {{ $employee->user->last_name }}
                                                 </option>
                                             @endforeach
                                         </select>
@@ -340,7 +385,7 @@
 
 @section('scripts')
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             // Get the filter dropdowns and table rows
             const employeeFilter = document.getElementById('filter-employee');
             const hotelFilter = document.getElementById('filter-hotel');
@@ -375,7 +420,7 @@
             payGroupFilter.addEventListener('change', filterTable);
 
             // Reset filters
-            resetButton.addEventListener('click', function() {
+            resetButton.addEventListener('click', function () {
                 employeeFilter.value = '';
                 hotelFilter.value = '';
                 payGroupFilter.value = '';
