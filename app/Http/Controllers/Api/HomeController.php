@@ -19,7 +19,7 @@ use Spatie\Permission\Models\Role;
 
 class HomeController extends Controller
 {
-    public function shomeScreen(Request $request)
+    public function homeScreen(Request $request)
     {
         $today = Carbon::today()->format('Y-m-d');
         $currentWeek = Carbon::now()->weekOfYear;
