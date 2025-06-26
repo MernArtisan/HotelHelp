@@ -69,7 +69,7 @@ return [
     |
     */
 
-    'timezone' => 'Asia/Kolkata', // For Indian Standard Time
+    'timezone' => 'Asia/karachi',
 
     /*
     |--------------------------------------------------------------------------
