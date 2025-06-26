@@ -207,62 +207,18 @@
                                 </thead>
                                 <tbody id="timecard-table-body">
                                     @forelse ($timeCard as $item)
-                                    <tr>
-                                        <td>{{ $item->employee->employee_id }}</td>
-                                        <td>{{ $item->employee->user->first_name }} </td>
-                                        <td>{{ $item->employee->user->middle_name }} </td>
-                                        <td>{{ $item->employee->user->last_name }} </td>
-                                        <td>{{ $item->date }}</td>
-                                        <td>{{ $item->employee->hotel->name ?? 'N/A' }}</td>
-                                        <td>{{ $item->employee->payGroup->name ?? 'N/A' }}</td>
-                                        <td>{{ \Carbon\Carbon::parse($item->start_time)->format('h:i A') ?? 'N/A' }}</td>
-                                        <td>{{ \Carbon\Carbon::parse($item->break_start)->format('h:i A') ?? 'N/A' }}</td>
-                                        <td>{{ \Carbon\Carbon::parse($item->break_end)->format('h:i A') ?? 'N/A' }}</td>
-                                        <td>{{ \Carbon\Carbon::parse($item->end_time)->format('h:i A') ?? 'N/A' }}</td>
-                                        <td>{{ $item->working_hours ?? 0 }} HR {{ $item->remaining_minutes ?? 0 }} MIN</td>
-                                        <td>{{ $item->break_duration_in_minutes ?? 0 }} MIN</td>
-                                        <td>${{ $item->total_amount ?? 'N/A' }}</td>
-                                    </tr>
-                                    @empty
-                                    <tr>
-                                        <td colspan="14" class="text-center">No timecards found.</td>
-                                    </tr>
-                                    @endforelse
-                                </tbody>
-                            </table> --}}
-                            <table class="table table-bordered" id="example" style="width:100%; white-space: nowrap;">
-                                <thead>
-                                    <tr>
-                                        <th>ID</th>
-                                        <th>First Name</th>
-                                        <th>Middle Name</th>
-                                        <th>Last Name</th>
-                                        <th>Date</th>
-                                        <th>Hotel</th>
-                                        <th>Pay Group</th>
-                                        <th>Start Time (UTC)</th>
-                                        <th>Break Start (UTC)</th>
-                                        <th>Break End (UTC)</th>
-                                        <th>End Time (UTC)</th>
-                                        <th>Total Work Hours</th>
-                                        <th>Break Duration</th>
-                                        <th>Wages</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="timecard-table-body">
-                                    @forelse ($timeCard as $item)
                                         <tr>
                                             <td>{{ $item->employee->employee_id }}</td>
-                                            <td>{{ $item->employee->user->first_name }}</td>
-                                            <td>{{ $item->employee->user->middle_name }}</td>
-                                            <td>{{ $item->employee->user->last_name }}</td>
+                                            <td>{{ $item->employee->user->first_name }} </td>
+                                            <td>{{ $item->employee->user->middle_name }} </td>
+                                            <td>{{ $item->employee->user->last_name }} </td>
                                             <td>{{ $item->date }}</td>
                                             <td>{{ $item->employee->hotel->name ?? 'N/A' }}</td>
                                             <td>{{ $item->employee->payGroup->name ?? 'N/A' }}</td>
-                                            <td>{{ $item->utc_start_time ?? 'N/A' }}</td>
-                                            <td>{{ $item->utc_break_start ?? 'N/A' }}</td>
-                                            <td>{{ $item->utc_break_end ?? 'N/A' }}</td>
-                                            <td>{{ $item->utc_end_time ?? 'N/A' }}</td>
+                                            <td>{{ \Carbon\Carbon::parse($item->start_time)->format('h:i A') ?? 'N/A' }}</td>
+                                            <td>{{ \Carbon\Carbon::parse($item->break_start)->format('h:i A') ?? 'N/A' }}</td>
+                                            <td>{{ \Carbon\Carbon::parse($item->break_end)->format('h:i A') ?? 'N/A' }}</td>
+                                            <td>{{ \Carbon\Carbon::parse($item->end_time)->format('h:i A') ?? 'N/A' }}</td>
                                             <td>{{ $item->working_hours ?? 0 }} HR {{ $item->remaining_minutes ?? 0 }} MIN</td>
                                             <td>{{ $item->break_duration_in_minutes ?? 0 }} MIN</td>
                                             <td>${{ $item->total_amount ?? 'N/A' }}</td>
@@ -273,7 +229,67 @@
                                         </tr>
                                     @endforelse
                                 </tbody>
-                            </table>
+                            </table> --}}
+                            <table class="table table-bordered" id="example" style="width:100%; white-space: nowrap;">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>First Name</th>
+            <th>Middle Name</th>
+            <th>Last Name</th>
+            <th>Date</th>
+            <th>Hotel</th>
+            <th>Pay Group</th>
+            <th>Start Time (UTC)</th>
+            <th>Break Start (UTC)</th>
+            <th>Break End (UTC)</th>
+            <th>End Time (UTC)</th>
+            <th>Total Work Hours</th>
+            <th>Break Duration</th>
+            <th>Wages</th>
+            <th>Status</th>
+        </tr>
+    </thead>
+    <tbody id="timecard-table-body">
+        @forelse ($timeCard as $item)
+            <tr class="{{ isset($item->timecard_error) ? 'bg-warning' : '' }}">
+                <td>{{ $item->employee->employee_id }}</td>
+                <td>{{ $item->employee->user->first_name }}</td>
+                <td>{{ $item->employee->user->middle_name }}</td>
+                <td>{{ $item->employee->user->last_name }}</td>
+                <td>{{ $item->date }}</td>
+                <td>{{ $item->employee->hotel->name ?? 'N/A' }}</td>
+                <td>{{ $item->employee->payGroup->name ?? 'N/A' }}</td>
+                <td>{{ $item->utc_start_time ?? 'N/A' }}</td>
+                <td>{{ $item->utc_break_start ?? 'N/A' }}</td>
+                <td>{{ $item->utc_break_end ?? 'N/A' }}</td>
+                <td>{{ $item->utc_end_time ?? 'N/A' }}</td>
+                <td>
+                    @if(isset($item->timecard_error))
+                        <span class="text-danger" title="{{ $item->timecard_error }}">
+                            {{ $item->working_hours }} HR {{ $item->remaining_minutes }} MIN
+                        </span>
+                    @else
+                        {{ $item->working_hours }} HR {{ $item->remaining_minutes }} MIN
+                    @endif
+                </td>
+                <td>{{ $item->break_duration_in_minutes }} MIN</td>
+                <td>${{ $item->total_amount ?? 'N/A' }}</td>
+                <td>
+                    @if(isset($item->timecard_error))
+                        <span class="badge badge-danger">Invalid</span>
+                    @else
+                        <span class="badge badge-success">Valid</span>
+                    @endif
+                </td>
+            </tr>
+        @empty
+            <tr>
+                <td colspan="15" class="text-center">No timecards found.</td>
+            </tr>
+        @endforelse
+    </tbody>
+</table>
                         </div>
                     </div>
 

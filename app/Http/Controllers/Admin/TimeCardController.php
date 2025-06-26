@@ -56,48 +56,60 @@ class TimeCardController extends Controller
 
     public function timecardCreate()
     {
-        // Fetch timecards with associated employee data, ordered by the most recent 'created_at' first
+        // Fetch timecards with associated employee data
         $timeCard = Timecard::with('employee.user', 'employee.hotel', 'employee.payGroup')
             ->orderBy('created_at', 'asc')
             ->get();
 
-        // Loop through each timecard to calculate break and work durations (all in UTC)
+        // Process each timecard
         $timeCard->each(function ($card) {
-            // Break duration in minutes (UTC)
+            // Parse all times as UTC
+            $start = Carbon::parse($card->start_time)->setTimezone('UTC');
+            $end = Carbon::parse($card->end_time)->setTimezone('UTC');
             $breakStart = Carbon::parse($card->break_start)->setTimezone('UTC');
             $breakEnd = Carbon::parse($card->break_end)->setTimezone('UTC');
-            $breakDurationInMinutes = $breakStart->diffInMinutes($breakEnd);
-            $card->break_duration_in_minutes = $breakDurationInMinutes;
 
-            // Work duration calculation (UTC)
-            $startTime = Carbon::parse($card->start_time)->setTimezone('UTC');
-            $endTime = Carbon::parse($card->end_time)->setTimezone('UTC');
-            $workDurationInMinutes = $startTime->diffInMinutes($endTime);
-            $actualWorkDurationInMinutes = $workDurationInMinutes - $breakDurationInMinutes;
-            $workDurationInHours = floor($actualWorkDurationInMinutes / 60);
-            $workDurationRemainingMinutes = $actualWorkDurationInMinutes % 60;
-
-            // Adding calculated working hours and remaining minutes
-            $card->working_hours = $workDurationInHours;
-            $card->remaining_minutes = $workDurationRemainingMinutes;
-
-            // Store UTC formatted times for display
-            $card->utc_start_time = $startTime->format('Y-m-d H:i:s');
+            // Store formatted UTC times
+            $card->utc_start_time = $start->format('Y-m-d H:i:s');
             $card->utc_break_start = $breakStart->format('Y-m-d H:i:s');
             $card->utc_break_end = $breakEnd->format('Y-m-d H:i:s');
-            $card->utc_end_time = $endTime->format('Y-m-d H:i:s');
+            $card->utc_end_time = $end->format('Y-m-d H:i:s');
+
+            // Validate time sequence
+            if ($end->lte($start)) {
+                $card->working_hours = 0;
+                $card->remaining_minutes = 0;
+                $card->break_duration_in_minutes = 0;
+                $card->timecard_error = 'End time must be after start time';
+                return;
+            }
+
+            // Calculate break duration
+            $breakDuration = 0;
+            if ($breakEnd->gt($breakStart)) {
+                if ($breakStart->between($start, $end) && $breakEnd->between($start, $end)) {
+                    $breakDuration = $breakStart->diffInMinutes($breakEnd);
+                } else {
+                    $card->timecard_error = 'Break time outside work hours';
+                }
+            }
+            $card->break_duration_in_minutes = $breakDuration;
+
+            // Calculate total work duration
+            $totalMinutes = $start->diffInMinutes($end);
+            $workMinutes = max(0, $totalMinutes - $breakDuration);
+
+            $card->working_hours = floor($workMinutes / 60);
+            $card->remaining_minutes = $workMinutes % 60;
         });
 
-        // Fetch active employees, ordered by ID in descending order
+        // Fetch other required data
         $employees = Employee::where('status', 'active')
             ->orderBy('id', 'desc')
             ->get();
-
-        // Fetch all hotels and payGroups
         $hotels = Hotel::all();
         $payGroups = PayGroup::all();
 
-        // Return the view with the necessary data
         return view('admin.timecard.index', compact('employees', 'timeCard', 'hotels', 'payGroups'));
     }
 
