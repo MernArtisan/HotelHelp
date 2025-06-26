@@ -54,35 +54,35 @@ class TimeCardController extends Controller
     //     return view('admin.timecard.index', compact('employees', 'timeCard', 'hotels', 'payGroups'));
     // }
 
-    public function timecardCreate()
+    public function timecardCreate(Request $request)
     {
+        // Get timezone from cookie or use default
+        $timezone = $request->cookie('user_timezone') ?? config('app.timezone');
+        
         // Fetch timecards with associated employee data
         $timeCard = Timecard::with('employee.user', 'employee.hotel', 'employee.payGroup')
             ->orderBy('created_at', 'asc')
             ->get();
 
-        // Get application timezone from config
-        $timezone = config('app.timezone');
-
         // Process each timecard
         $timeCard->each(function ($card) use ($timezone) {
-            // Parse all times as UTC and convert to local timezone
+            // Parse all times as UTC and convert to user's timezone
             $start = Carbon::parse($card->start_time)->setTimezone('UTC')->setTimezone($timezone);
             $end = Carbon::parse($card->end_time)->setTimezone('UTC')->setTimezone($timezone);
             $breakStart = Carbon::parse($card->break_start)->setTimezone('UTC')->setTimezone($timezone);
             $breakEnd = Carbon::parse($card->break_end)->setTimezone('UTC')->setTimezone($timezone);
 
-            // Store formatted local times
+            // Store formatted times
             $card->local_start_time = $start->format('Y-m-d H:i:s');
             $card->local_break_start = $breakStart->format('Y-m-d H:i:s');
             $card->local_break_end = $breakEnd->format('Y-m-d H:i:s');
             $card->local_end_time = $end->format('Y-m-d H:i:s');
-
-            // Also store formatted times in 12-hour format with AM/PM
-            $card->formatted_start_time = $start->format('h:i A');
-            $card->formatted_break_start = $breakStart->format('h:i A');
-            $card->formatted_break_end = $breakEnd->format('h:i A');
-            $card->formatted_end_time = $end->format('h:i A');
+            
+            // 12-hour format versions
+            $card->display_start = $start->format('h:i A');
+            $card->display_break_start = $breakStart->format('h:i A');
+            $card->display_break_end = $breakEnd->format('h:i A');
+            $card->display_end = $end->format('h:i A');
 
             // Validate time sequence
             if ($end->lte($start)) {
@@ -94,33 +94,24 @@ class TimeCardController extends Controller
             }
 
             // Calculate break duration
-            $breakDuration = 0;
-            if ($breakEnd->gt($breakStart)) {
-                if ($breakStart->between($start, $end) && $breakEnd->between($start, $end)) {
-                    $breakDuration = $breakStart->diffInMinutes($breakEnd);
-                } else {
-                    $card->timecard_error = 'Break time outside work hours';
-                }
-            }
+            $breakDuration = ($breakEnd->gt($breakStart)) ? $breakStart->diffInMinutes($breakEnd) : 0;
             $card->break_duration_in_minutes = $breakDuration;
 
-            // Calculate total work duration
+            // Calculate work duration
             $totalMinutes = $start->diffInMinutes($end);
             $workMinutes = max(0, $totalMinutes - $breakDuration);
-
             $card->working_hours = floor($workMinutes / 60);
             $card->remaining_minutes = $workMinutes % 60;
         });
 
-        // Fetch other required data
-        $employees = Employee::where('status', 'active')
-            ->orderBy('id', 'desc')
-            ->get();
+        // Fetch other data
+        $employees = Employee::where('status', 'active')->orderBy('id', 'desc')->get();
         $hotels = Hotel::all();
         $payGroups = PayGroup::all();
 
-        return view('admin.timecard.index', compact('employees', 'timeCard', 'hotels', 'payGroups'));
+        return view('admin.timecard.index', compact('timeCard', 'employees', 'hotels', 'payGroups'));
     }
+
 
 
     public function timecardPost(Request $request)

@@ -230,78 +230,73 @@
                                     @endforelse
                                 </tbody>
                             </table> --}}
-                            <table class="table table-bordered" id="example" style="width:100%; white-space: nowrap;">
-    <thead>
-        <tr>
-            <th>ID</th>
-            <th>First Name</th>
-            <th>Middle Name</th>
-            <th>Last Name</th>
-            <th>Date</th>
-            <th>Hotel</th>
-            <th>Pay Group</th>
-            <th>Start Time (Local)</th>
-            <th>Break Start (Local)</th>
-            <th>Break End (Local)</th>
-            <th>End Time (Local)</th>
-            <th>Total Work Hours</th>
-            <th>Break Duration</th>
-            <th>Wages</th>
-            <th>Status</th>
-        </tr>
-    </thead>
-    <tbody id="timecard-table-body">
-        @forelse ($timeCard as $item)
-            <tr class="{{ isset($item->timecard_error) ? 'bg-warning' : '' }}">
-                <td>{{ $item->employee->employee_id }}</td>
-                <td>{{ $item->employee->user->first_name }}</td>
-                <td>{{ $item->employee->user->middle_name }}</td>
-                <td>{{ $item->employee->user->last_name }}</td>
-                <td>{{ $item->date }}</td>
-                <td>{{ $item->employee->hotel->name ?? 'N/A' }}</td>
-                <td>{{ $item->employee->payGroup->name ?? 'N/A' }}</td>
-                <td>
-                    {{ $item->local_start_time }}<br>
-                    <small>({{ $item->formatted_start_time }})</small>
-                </td>
-                <td>
-                    {{ $item->local_break_start }}<br>
-                    <small>({{ $item->formatted_break_start }})</small>
-                </td>
-                <td>
-                    {{ $item->local_break_end }}<br>
-                    <small>({{ $item->formatted_break_end }})</small>
-                </td>
-                <td>
-                    {{ $item->local_end_time }}<br>
-                    <small>({{ $item->formatted_end_time }})</small>
-                </td>
-                <td>
-                    @if(isset($item->timecard_error))
-                        <span class="text-danger" title="{{ $item->timecard_error }}">
+                            <table class="table table-bordered" style="width:100%; white-space: nowrap;">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>Date</th>
+                        <th>Start Time</th>
+                        <th>Break Start</th>
+                        <th>Break End</th>
+                        <th>End Time</th>
+                        <th>Total Hours</th>
+                        <th>Break</th>
+                        <th>Wages</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse ($timeCard as $item)
+                    <tr class="{{ isset($item->timecard_error) ? 'table-warning' : '' }}">
+                        <td>{{ $item->employee->employee_id }}</td>
+                        <td>
+                            {{ $item->employee->user->first_name }}
+                            {{ $item->employee->user->last_name }}
+                        </td>
+                        <td>{{ $item->date }}</td>
+                        <td>
+                            {{ $item->local_start_time }}<br>
+                            <small>({{ $item->display_start }})</small>
+                        </td>
+                        <td>
+                            {{ $item->local_break_start }}<br>
+                            <small>({{ $item->display_break_start }})</small>
+                        </td>
+                        <td>
+                            {{ $item->local_break_end }}<br>
+                            <small>({{ $item->display_break_end }})</small>
+                        </td>
+                        <td>
+                            {{ $item->local_end_time }}<br>
+                            <small>({{ $item->display_end }})</small>
+                        </td>
+                        <td>
+                            @if(isset($item->timecard_error))
+                            <span class="text-danger" title="{{ $item->timecard_error }}">
+                                {{ $item->working_hours }} HR {{ $item->remaining_minutes }} MIN
+                            </span>
+                            @else
                             {{ $item->working_hours }} HR {{ $item->remaining_minutes }} MIN
-                        </span>
-                    @else
-                        {{ $item->working_hours }} HR {{ $item->remaining_minutes }} MIN
-                    @endif
-                </td>
-                <td>{{ $item->break_duration_in_minutes }} MIN</td>
-                <td>${{ $item->total_amount ?? 'N/A' }}</td>
-                <td>
-                    @if(isset($item->timecard_error))
-                        <span class="badge badge-danger">Invalid</span>
-                    @else
-                        <span class="badge badge-success">Valid</span>
-                    @endif
-                </td>
-            </tr>
-        @empty
-            <tr>
-                <td colspan="15" class="text-center">No timecards found.</td>
-            </tr>
-        @endforelse
-    </tbody>
-</table>
+                            @endif
+                        </td>
+                        <td>{{ $item->break_duration_in_minutes }} MIN</td>
+                        <td>${{ number_format($item->total_amount, 2) }}</td>
+                        <td>
+                            @if(isset($item->timecard_error))
+                            <span class="badge bg-danger">Invalid</span>
+                            @else
+                            <span class="badge bg-success">Valid</span>
+                            @endif
+                        </td>
+                    </tr>
+                    @empty
+                    <tr>
+                        <td colspan="11" class="text-center">No timecards found</td>
+                    </tr>
+                    @endforelse
+                </tbody>
+            </table>
                         </div>
                     </div>
 
