@@ -19,7 +19,7 @@ use Spatie\Permission\Models\Role;
 
 class HomeController extends Controller
 {
-    public function homeScreen(Request $request)
+    public function shomeScreen(Request $request)
     {
         $today = Carbon::today()->format('Y-m-d');
         $currentWeek = Carbon::now()->weekOfYear;
@@ -130,10 +130,10 @@ class HomeController extends Controller
                 'user' => $user->first_name . ' ' . $user->middle_name . ' ' . $user->last_name,
                 'designation' => $user->employee->designation,
                 'employee_id' => $user->employee->employee_id,
-                'start_time' => $timecardToday ? $timecardToday->start_time : null,
-                'break_start' => $timecardToday ? $timecardToday->break_start : null,
-                'break_end' => $timecardToday ? $timecardToday->break_end : null,
-                'end_time' => $timecardToday ? $timecardToday->end_time : null,
+                'start_time' => null,
+                'break_start' => null,
+                'break_end' => null,
+                'end_time' => null,
                 'total_hours' => $todayHours ?? null,
                 'total_amount' => $timecardToday->total_amount ?? null,
                 'attendance_percentage' => $attendancePercentage,
