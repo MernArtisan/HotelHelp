@@ -186,7 +186,7 @@
 
                     <div class="table-container">
                         <div class="table-responsive">
-                            {{-- <table class="table table-bordered" id="example" style="width:100%; white-space: nowrap;">
+                            <table class="table table-bordered nowrap" id="example" style="width:100%;">
                                 <thead>
                                     <tr>
                                         <th>ID</th>
@@ -205,22 +205,41 @@
                                         <th>Wages</th>
                                     </tr>
                                 </thead>
+
                                 <tbody id="timecard-table-body">
                                     @forelse ($timeCard as $item)
                                         <tr>
                                             <td>{{ $item->employee->employee_id }}</td>
-                                            <td>{{ $item->employee->user->first_name }} </td>
-                                            <td>{{ $item->employee->user->middle_name }} </td>
-                                            <td>{{ $item->employee->user->last_name }} </td>
+                                            <td>{{ $item->employee->user->first_name }}</td>
+                                            <td>{{ $item->employee->user->middle_name }}</td>
+                                            <td>{{ $item->employee->user->last_name }}</td>
+
+                                            {{-- date is fine as-is (no TZ) --}}
                                             <td>{{ $item->date }}</td>
+
                                             <td>{{ $item->employee->hotel->name ?? 'N/A' }}</td>
                                             <td>{{ $item->employee->payGroup->name ?? 'N/A' }}</td>
-                                            <td>{{ \Carbon\Carbon::parse($item->start_time)->format('h:i A') ?? 'N/A' }}</td>
-                                            <td>{{ \Carbon\Carbon::parse($item->break_start)->format('h:i A') ?? 'N/A' }}</td>
-                                            <td>{{ \Carbon\Carbon::parse($item->break_end)->format('h:i A') ?? 'N/A' }}</td>
-                                            <td>{{ \Carbon\Carbon::parse($item->end_time)->format('h:i A') ?? 'N/A' }}</td>
-                                            <td>{{ $item->working_hours ?? 0 }} HR {{ $item->remaining_minutes ?? 0 }} MIN</td>
-                                            <td>{{ $item->break_duration_in_minutes ?? 0 }} MIN</td>
+
+                                            {{-- 4 clock columns — store UTC stamp in data-utc.
+                                            Text inside <td> is a Karachi fallback for users with JS disabled. --}}
+                                            <td class="time" data-utc="{{ $item->start_time->toIso8601String() }}">
+                                                {{ $item->start_time->timezone('Asia/Karachi')->format('h:i A') }}
+                                            </td>
+
+                                            <td class="time" data-utc="{{ $item->break_start->toIso8601String() }}">
+                                                {{ $item->break_start->timezone('Asia/Karachi')->format('h:i A') }}
+                                            </td>
+
+                                            <td class="time" data-utc="{{ $item->break_end->toIso8601String() }}">
+                                                {{ $item->break_end->timezone('Asia/Karachi')->format('h:i A') }}
+                                            </td>
+
+                                            <td class="time" data-utc="{{ $item->end_time->toIso8601String() }}">
+                                                {{ $item->end_time->timezone('Asia/Karachi')->format('h:i A') }}
+                                            </td>
+
+                                            <td>{{ $item->working_hours }} HR {{ $item->remaining_minutes }} MIN</td>
+                                            <td>{{ $item->break_duration_in_minutes }} MIN</td>
                                             <td>${{ $item->total_amount ?? 'N/A' }}</td>
                                         </tr>
                                     @empty
@@ -229,75 +248,9 @@
                                         </tr>
                                     @endforelse
                                 </tbody>
-                            </table> --}}
-                            <table class="table table-bordered" style="width:100%; white-space: nowrap;">
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Name</th>
-                        <th>Date</th>
-                        <th>Start Time</th>
-                        <th>Break Start</th>
-                        <th>Break End</th>
-                        <th>End Time</th>
-                        <th>Total Hours</th>
-                        <th>Break</th>
-                        <th>Wages</th>
-                        <th>Status</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @forelse ($timeCard as $item)
-                    <tr class="{{ isset($item->timecard_error) ? 'table-warning' : '' }}">
-                        <td>{{ $item->employee->employee_id }}</td>
-                        <td>
-                            {{ $item->employee->user->first_name }}
-                            {{ $item->employee->user->last_name }}
-                        </td>
-                        <td>{{ $item->date }}</td>
-                        <td>
-                            {{ $item->local_start_time }}<br>
-                            <small>({{ $item->display_start }})</small>
-                        </td>
-                        <td>
-                            {{ $item->local_break_start }}<br>
-                            <small>({{ $item->display_break_start }})</small>
-                        </td>
-                        <td>
-                            {{ $item->local_break_end }}<br>
-                            <small>({{ $item->display_break_end }})</small>
-                        </td>
-                        <td>
-                            {{ $item->local_end_time }}<br>
-                            <small>({{ $item->display_end }})</small>
-                        </td>
-                        <td>
-                            @if(isset($item->timecard_error))
-                            <span class="text-danger" title="{{ $item->timecard_error }}">
-                                {{ $item->working_hours }} HR {{ $item->remaining_minutes }} MIN
-                            </span>
-                            @else
-                            {{ $item->working_hours }} HR {{ $item->remaining_minutes }} MIN
-                            @endif
-                        </td>
-                        <td>{{ $item->break_duration_in_minutes }} MIN</td>
-                        <td>${{ number_format($item->total_amount, 2) }}</td>
-                        <td>
-                            @if(isset($item->timecard_error))
-                            <span class="badge bg-danger">Invalid</span>
-                            @else
-                            <span class="badge bg-success">Valid</span>
-                            @endif
-                        </td>
-                    </tr>
-                    @empty
-                    <tr>
-                        <td colspan="11" class="text-center">No timecards found</td>
-                    </tr>
-                    @endforelse
-                </tbody>
-            </table>
+                            </table>
                         </div>
+
                     </div>
 
                 </div>
@@ -407,6 +360,37 @@
 @endsection
 
 @section('scripts')
+    <script>
+        /**
+         * Convert every <td class="time"> to the viewer’s local clock.
+         * Runs once on load *and* each time DataTables redraws.
+         */
+        function renderLocalTimes(ctx = document) {
+            const opts = { hour: '2-digit', minute: '2-digit', hour12: true };
+            ctx.querySelectorAll('td.time').forEach(td => {
+                const iso = td.dataset.utc;
+                if (!iso) return;
+                const local = new Date(iso);                         // auto-converts UTC→browser zone
+                td.textContent = local.toLocaleTimeString(undefined, opts);
+                td.title = local.toLocaleString();             // tooltip with full date+time
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // Initial pass
+            renderLocalTimes();
+
+            // If you use DataTables, hook its draw event so new/filtered rows stay correct.
+            const dt = $('#example').DataTable({
+                responsive: true,
+                order: [[0, 'asc']],
+                drawCallback: function () {
+                    // `this.api().table().body()` points to tbody element just redrawn
+                    renderLocalTimes(this.api().table().body());
+                }
+            });
+        });
+    </script>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             // Get the filter dropdowns and table rows

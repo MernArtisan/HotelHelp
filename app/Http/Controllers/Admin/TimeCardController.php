@@ -13,103 +13,42 @@ use Illuminate\Http\Request;
 
 class TimeCardController extends Controller
 {
-    // public function timecardCreate()
-    // {
-    //     // Fetch timecards with associated employee data, ordered by the most recent 'created_at' first
-    //     $timeCard = Timecard::with('employee.user', 'employee.hotel', 'employee.payGroup')
-    //         ->orderBy('created_at', 'asc')
-    //         ->get();
-
-    //     // Loop through each timecard to calculate break and work durations
-    //     $timeCard->each(function ($card) {
-    //         // Break duration in minutes
-    //         $breakStart = Carbon::parse($card->break_start);
-    //         $breakEnd = Carbon::parse($card->break_end);
-    //         $breakDurationInMinutes = $breakStart->diffInMinutes($breakEnd);
-    //         $card->break_duration_in_minutes = $breakDurationInMinutes;
-
-    //         // Work duration calculation (start_time to end_time minus break duration)
-    //         $startTime = Carbon::parse($card->start_time);
-    //         $endTime = Carbon::parse($card->end_time);
-    //         $workDurationInMinutes = $startTime->diffInMinutes($endTime);
-    //         $actualWorkDurationInMinutes = $workDurationInMinutes - $breakDurationInMinutes;
-    //         $workDurationInHours = floor($actualWorkDurationInMinutes / 60);
-    //         $workDurationRemainingMinutes = $actualWorkDurationInMinutes % 60;
-
-    //         // Adding calculated working hours and remaining minutes
-    //         $card->working_hours = $workDurationInHours;
-    //         $card->remaining_minutes = $workDurationRemainingMinutes;
-    //     });
-
-    //     // Fetch active employees, ordered by ID in descending order
-    //     $employees = Employee::where('status', 'active')
-    //         ->orderBy('id', 'desc')
-    //         ->get();
-
-    //     // Fetch all hotels and payGroups
-    //     $hotels = Hotel::all();
-    //     $payGroups = PayGroup::all();
-
-    //     // Return the view with the necessary data
-    //     return view('admin.timecard.index', compact('employees', 'timeCard', 'hotels', 'payGroups'));
-    // }
-
-    public function timecardCreate(Request $request)
+    public function timecardCreate()
     {
-        // Get timezone from cookie or use default
-        $timezone = $request->cookie('user_timezone') ?? config('app.timezone');
-        
-        // Fetch timecards with associated employee data
         $timeCard = Timecard::with('employee.user', 'employee.hotel', 'employee.payGroup')
             ->orderBy('created_at', 'asc')
             ->get();
 
-        // Process each timecard
-        $timeCard->each(function ($card) use ($timezone) {
-            // Parse all times as UTC and convert to user's timezone
-            $start = Carbon::parse($card->start_time)->setTimezone('UTC')->setTimezone($timezone);
-            $end = Carbon::parse($card->end_time)->setTimezone('UTC')->setTimezone($timezone);
-            $breakStart = Carbon::parse($card->break_start)->setTimezone('UTC')->setTimezone($timezone);
-            $breakEnd = Carbon::parse($card->break_end)->setTimezone('UTC')->setTimezone($timezone);
+        $timeCard->each(function ($card) {
+            // Ensure timestamps are parsed as UTC first
+            $startTime    = Carbon::parse($card->start_time)->timezone('UTC');
+            $endTime      = Carbon::parse($card->end_time)->timezone('UTC');
+            $breakStart   = Carbon::parse($card->break_start)->timezone('UTC');
+            $breakEnd     = Carbon::parse($card->break_end)->timezone('UTC');
 
-            // Store formatted times
-            $card->local_start_time = $start->format('Y-m-d H:i:s');
-            $card->local_break_start = $breakStart->format('Y-m-d H:i:s');
-            $card->local_break_end = $breakEnd->format('Y-m-d H:i:s');
-            $card->local_end_time = $end->format('Y-m-d H:i:s');
-            
-            // 12-hour format versions
-            $card->display_start = $start->format('h:i A');
-            $card->display_break_start = $breakStart->format('h:i A');
-            $card->display_break_end = $breakEnd->format('h:i A');
-            $card->display_end = $end->format('h:i A');
-
-            // Validate time sequence
-            if ($end->lte($start)) {
-                $card->working_hours = 0;
-                $card->remaining_minutes = 0;
-                $card->break_duration_in_minutes = 0;
-                $card->timecard_error = 'End time must be after start time';
-                return;
-            }
+            // Save clean timestamps back to model (Laravel casts will take care)
+            $card->start_time  = $startTime;
+            $card->end_time    = $endTime;
+            $card->break_start = $breakStart;
+            $card->break_end   = $breakEnd;
 
             // Calculate break duration
-            $breakDuration = ($breakEnd->gt($breakStart)) ? $breakStart->diffInMinutes($breakEnd) : 0;
-            $card->break_duration_in_minutes = $breakDuration;
+            $breakDurationInMinutes = $breakStart->diffInMinutes($breakEnd);
+            $card->break_duration_in_minutes = $breakDurationInMinutes;
 
-            // Calculate work duration
-            $totalMinutes = $start->diffInMinutes($end);
-            $workMinutes = max(0, $totalMinutes - $breakDuration);
-            $card->working_hours = floor($workMinutes / 60);
-            $card->remaining_minutes = $workMinutes % 60;
+            // Work duration
+            $workDurationInMinutes = $startTime->diffInMinutes($endTime);
+            $actualWorkDuration    = $workDurationInMinutes - $breakDurationInMinutes;
+
+            $card->working_hours   = floor($actualWorkDuration / 60);
+            $card->remaining_minutes = $actualWorkDuration % 60;
         });
 
-        // Fetch other data
-        $employees = Employee::where('status', 'active')->orderBy('id', 'desc')->get();
-        $hotels = Hotel::all();
-        $payGroups = PayGroup::all();
+        $employees  = Employee::where('status', 'active')->orderBy('id', 'desc')->get();
+        $hotels     = Hotel::all();
+        $payGroups  = PayGroup::all();
 
-        return view('admin.timecard.index', compact('timeCard', 'employees', 'hotels', 'payGroups'));
+        return view('admin.timecard.index', compact('employees', 'timeCard', 'hotels', 'payGroups'));
     }
 
 
