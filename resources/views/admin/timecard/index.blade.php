@@ -385,10 +385,10 @@
                 responsive: true,
                 order: [[0, 'asc']],
                 drawCallback: function () {
-                    // `this.api().table().body()` points to tbody element just redrawn
                     renderLocalTimes(this.api().table().body());
                 }
             });
+
         });
     </script>
     <script>
