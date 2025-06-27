@@ -380,16 +380,18 @@
             // Initial pass
             renderLocalTimes();
 
-            // If you use DataTables, hook its draw event so new/filtered rows stay correct.
-            const dt = $('#example').DataTable({
-                responsive: true,
-                order: [[0, 'asc']],
-                drawCallback: function () {
-                    renderLocalTimes(this.api().table().body());
-                }
-            });
-
+            // ✅ Safely initialize only once
+            if (!$.fn.DataTable.isDataTable('#example')) {
+                $('#example').DataTable({
+                    responsive: true,
+                    order: [[0, 'asc']],
+                    drawCallback: function () {
+                        renderLocalTimes(this.api().table().body());
+                    }
+                });
+            }
         });
+
     </script>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
